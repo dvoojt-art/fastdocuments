@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   LayoutGrid
 } from "lucide-react"
+import { ChevronUp } from "lucide-react"
 
 export default function HomePage() {
   return (
@@ -49,7 +50,7 @@ export default function HomePage() {
               INSTANT GENERATION
             </div>
             <h1 className="text-6xl font-headline font-bold tracking-tighter sm:text-7xl md:text-8xl leading-[0.9] mb-8 text-foreground">
-              Callbox Davao <br />
+              Callb<span className="relative inline-block">o<ChevronUp className="absolute -top-[0.2em] left-1/2 -translate-x-1/2 h-[0.5em] w-[0.5em] text-primary" strokeWidth={4} /></span>x Davao <br />
               <span className="text-foreground">e-Documents Portal</span>
             </h1>
             <p className="mx-auto max-w-[650px] text-lg md:text-xl font-medium leading-relaxed opacity-60 mb-12">
