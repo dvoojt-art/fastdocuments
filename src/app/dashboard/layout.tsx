@@ -11,6 +11,7 @@ import { Loader2, ShieldAlert, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signOut } from "firebase/auth";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ChevronUp } from "lucide-react"
 
 const WHITELISTED_ADMIN_EMAIL = "admin@callboxinc.com";
 
@@ -112,7 +113,7 @@ export default function DashboardLayout({
              <h1 className="font-headline font-bold text-lg uppercase tracking-tight leading-none">
                FastDocs <span className="text-primary">Console</span>
              </h1>
-             <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary mt-0.5">Callbox Inc. Davao</span>
+             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mt-1">Callb<span className="relative inline-block">o<ChevronUp className="absolute -top-[0.2em] left-1/2 -translate-x-1/2 h-[0.5em] w-[0.5em] text-primary" strokeWidth={4} /></span>x Inc. Davao</span>
           </div>
           <div className="flex items-center gap-4 ml-auto">
             <NotificationBell />
