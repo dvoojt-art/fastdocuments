@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect } from 'react';
@@ -17,6 +16,5 @@ export function FirebaseErrorListener() {
       });
     });
   }, [toast]);
-
   return null;
 }

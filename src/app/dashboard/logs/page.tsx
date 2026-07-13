@@ -5,16 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Zap, Activity, Clock, User, Loader2, Trash2 } from "lucide-react"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, limit, doc, deleteDoc } from "firebase/firestore"
@@ -22,7 +13,6 @@ import { toast } from "sonner"
 
 export default function LogsPage() {
   const db = useFirestore()
-
   const certificatesQuery = useMemoFirebase(() => {
     if (!db) return null
     return query(collection(db, "certificates"), orderBy("createdAt", "desc"), limit(50))
@@ -35,11 +25,9 @@ export default function LogsPage() {
 
   const { data: certificates, loading: loadingCerts } = useCollection(certificatesQuery)
   const { data: employees, loading: loadingEmps } = useCollection(employeesQuery)
-
   const [isDeleting, setIsDeleting] = useState(false)
   const [selectedLog, setSelectedLog] = useState<any | null>(null)
   const [isAlertOpen, setIsAlertOpen] = useState(false)
-
   const stats = [
     { 
       id: "events", 

@@ -1,43 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { 
-  UserPlus, 
-  ShieldCheck, 
-  Trash2, 
-  Loader2, 
-  Search,
-  Mail,
-  MoreHorizontal,
-  X
-} from "lucide-react"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { UserPlus, ShieldCheck, Trash2, Loader2, Search, Mail, MoreHorizontal } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription} from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
@@ -93,14 +66,11 @@ export default function UserManagementPage() {
       })
       setOpen(false)
     } catch (err: any) {
-      const permissionError = new FirestorePermissionError(
-        "Insufficient permissions to authorize new admin user.",
-        {
-          path: "adminUsers",
-          operation: "create",
-          requestResourceData: { ...newAdmin, email: cleanEmail }
-        }
-      )
+      const permissionError = new FirestorePermissionError({
+        path: "employees",
+        operation: "delete",
+        requestResourceData: {},
+      });
       errorEmitter.emit("permission-error", permissionError)
     } finally {
       setIsAdding(false)
@@ -118,13 +88,11 @@ export default function UserManagementPage() {
         })
       })
       .catch(async (err) => {
-        const permissionError = new FirestorePermissionError(
-          `Insufficient permissions to revoke admin access at ${docRef.path}.`,
-          {
-            path: docRef.path,
-            operation: "delete"
-          }
-        )
+        const permissionError = new FirestorePermissionError({
+        path: "employees",
+        operation: "delete",
+        requestResourceData: {},
+      });
         errorEmitter.emit("permission-error", permissionError)
       })
   }
@@ -155,7 +123,7 @@ export default function UserManagementPage() {
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle className="font-headline font-bold uppercase">New Admin User</DialogTitle>
-              <p className="text-xs font-bold opacity-60 uppercase tracking-widest">Provide administrative access to the platform</p>
+              <DialogDescription className="text-xs font-bold opacity-60 uppercase tracking-widest">Provide administrative access to the platform</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">

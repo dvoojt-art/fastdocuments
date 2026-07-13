@@ -1,11 +1,11 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, UserPlus, MoreHorizontal, Loader2, Mail, Copy, Edit, Trash2, Users, FileUp } from "lucide-react"
+import { Search, UserPlus, MoreHorizontal, Loader2, Copy, Edit, Trash2, Users, FileUp } from "lucide-react"
 import Link from "next/link"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, doc, deleteDoc, writeBatch, serverTimestamp } from "firebase/firestore"
@@ -24,14 +24,12 @@ export default function EmployeesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isImporting, setIsImporting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
   const employeesQuery = useMemoFirebase(() => {
     if (!db) return null
     return query(collection(db, "employees"), orderBy("lastName", "asc"))
   }, [db])
 
   const { data: employees, loading } = useCollection(employeesQuery)
-
   const filteredEmployees = employees?.filter(emp => 
     `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -48,7 +46,6 @@ export default function EmployeesPage() {
       return dateStr;
     }
   }
-
   const handleCopyEmail = (email: string) => {
     navigator.clipboard.writeText(email)
     toast({
@@ -56,31 +53,23 @@ export default function EmployeesPage() {
       description: "Work email copied to clipboard.",
     })
   }
-
   const handleDelete = (id: string, name: string) => {
     if (!db) return
-    const permissionError = new FirestorePermissionError(
-  "Permission denied deleting employee",
-  {
-    path: "employees",
-    operation: "delete",
-    requestResourceData: {},
-  }
-)
+    const permissionError = new FirestorePermissionError({
+      path: "employees",
+      operation: "delete",
+      requestResourceData: {},
+    });
     errorEmitter.emit("permission-error", permissionError)
-
     deleteDoc(doc(db, "employees", id))
-    
     toast({
       title: "Record Deleted",
       description: `Employee ${name} has been removed from the hub.`,
     })
   }
-
   const handleImportClick = () => {
     fileInputRef.current?.click()
   }
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !db) return

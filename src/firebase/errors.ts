@@ -4,19 +4,28 @@ export type SecurityRuleContext = {
   requestResourceData?: any;
 };
 
+/**
+ * Custom error class for Firestore permission issues.
+ * Restructured to be extremely robust against transpiler issues with the 'super' keyword.
+ * Properties are assigned strictly after super() to satisfy strict class lifecycle requirements.
+ */
 export class FirestorePermissionError extends Error {
-  public context: SecurityRuleContext;
+  public context: SecurityRuleContext | undefined;
 
-  constructor(message: string, context: SecurityRuleContext) {
+  constructor(context: SecurityRuleContext) {
+    // Generate message before super call
+    const message = context 
+      ? `Missing or insufficient permissions: ${context.operation} at ${context.path}` 
+      : "Missing or insufficient permissions";
     
-    // Calling super() first is mandatory in TypeScript/JavaScript classes
+    // Call super() first - this is mandatory and must be the first statement
     super(message);
     
-    // Ensure the name is set correctly for better debugging
+    // Assign properties strictly after super()
     this.name = "FirestorePermissionError";
     this.context = context;
-
-    // Set the prototype explicitly for extending built-in Error in some environments
+    
+    // Ensure proper prototype chain
     Object.setPrototypeOf(this, FirestorePermissionError.prototype);
   }
 }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, useMemo } from 'react';
@@ -12,9 +11,7 @@ interface FirebaseContextType {
   db: Firestore;
   auth: Auth;
 }
-
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
-
 export function FirebaseProvider({ 
   children, 
   app, 

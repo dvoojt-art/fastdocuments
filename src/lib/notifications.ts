@@ -1,10 +1,8 @@
-
 'use client';
 
 import { collection, addDoc, serverTimestamp, Firestore } from 'firebase/firestore';
 
 export type NotificationType = 'Info' | 'Success' | 'Warning' | 'Error';
-
 export interface CreateNotificationInput {
   title: string;
   message: string;

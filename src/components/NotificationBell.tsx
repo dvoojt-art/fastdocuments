@@ -1,40 +1,26 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import {
-  Bell,
-  Check,
-  Info,
-  AlertTriangle,
-  XCircle,
-  ExternalLink,
-  Loader2,
-  X,
-  Trash2
-} from 'lucide-react';
-
+import { Bell, Check, Info, AlertTriangle, XCircle, ExternalLink, Loader2, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import {
-  query,
-  collection,
-  orderBy,
-  limit,
-  doc,
-  updateDoc,
-  deleteDoc,
-  writeBatch
-} from 'firebase/firestore';
-
+import type { User } from 'firebase/auth';
+import { query, collection, limit, doc, updateDoc, deleteDoc, writeBatch, where } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-export function NotificationBell() {
+interface NotificationBellProps {
+  role: 'admin' | 'member' | null;
+  user: User | null | undefined;
+}
+
+export function NotificationBell({ role, user }: NotificationBellProps) {
   const db = useFirestore();
   const [open, setOpen] = useState(false);
+  const isAdmin = role === 'admin';
 
   // Track previous notifications to detect NEW ones
   const prevIdsRef = useRef<string[]>([]);
@@ -44,30 +30,43 @@ export function NotificationBell() {
   // -----------------------------
   const notificationsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(
-      collection(db, 'notifications'),
-      orderBy('createdAt', 'desc'),
-      limit(20)
-    );
-  }, [db]);
+
+    if (isAdmin) {
+      return query(
+        collection(db, 'notifications'),
+       
+        limit(20)
+      );
+    }
+
+    if (user?.email) {
+      return query(
+        collection(db, "notifications"),
+        where("recipient", "in", ["all_members", user.email.toLowerCase()]),
+        
+        limit(10)
+      );
+    }
+
+    return null;
+  }, [db, isAdmin, user?.email]);
 
   const { data: notifications, loading } = useCollection(notificationsQuery);
-
   const unreadCount = notifications?.filter((n) => !n.isRead).length || 0;
-const prevCountRef = useRef(0);
+  const prevCountRef = useRef(0);
 
-useEffect(() => {
-  if (!notifications) return;
+    useEffect(() => {
+      if (!notifications) return;
 
   const currentUnread = notifications.filter(n => !n.isRead).length;
 
   // play sound only when unread count increases
-  if (currentUnread > prevCountRef.current) {
-    playSound();
-  }
+    if (currentUnread > prevCountRef.current) {
+      playSound();
+    }
 
-  prevCountRef.current = currentUnread;
-}, [notifications]);
+    prevCountRef.current = currentUnread;
+    }, [notifications]);
   // -----------------------------
   // MARK AS READ
   // -----------------------------
@@ -91,7 +90,7 @@ useEffect(() => {
     } catch (error) {
       console.error('Error deleting notification:', error);
     }
-  };
+    };
 
   // -----------------------------
   // CLEAR ALL
@@ -157,7 +156,6 @@ useEffect(() => {
     if (!notifications) return;
 
     const currentIds = notifications.map((n) => n.id);
-
     const newNotifications = notifications.filter(
       (n) => !prevIdsRef.current.includes(n.id)
     );
@@ -184,7 +182,6 @@ useEffect(() => {
           className="relative hover:bg-white/10 text-white"
         >
           <Bell className="h-5 w-5" />
-
           {unreadCount > 0 && (
             <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-primary text-primary-foreground font-bold border-2 border-[#0f326e] animate-pulse">
               {unreadCount}
@@ -226,7 +223,6 @@ useEffect(() => {
                 >
                   <div className="flex gap-3">
                     <div className="mt-1">{getIcon(n.type)}</div>
-
                     <div className="space-y-1">
                       <p
                         className={cn(
@@ -236,11 +232,9 @@ useEffect(() => {
                       >
                         {n.title}
                       </p>
-
                       <p className="text-[10px] leading-tight opacity-60 font-medium">
                         {n.message}
                       </p>
-
                       {!n.isRead && (
                         <div className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-primary" />
                       )}
@@ -254,7 +248,7 @@ useEffect(() => {
                         <X className="h-4 w-4" />
                       </Button>
 
-                      {n.link && (
+                      {isAdmin && n.link && (
                         <Link
                           href={n.link}
                           className="flex items-center gap-1 text-[9px] font-bold uppercase text-primary hover:underline mt-2"
@@ -282,28 +276,30 @@ useEffect(() => {
           )}
         </ScrollArea>
 
-        <div className="p-2 bg-muted/30 border-t grid grid-cols-2 gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full font-bold text-[10px] uppercase tracking-widest h-8 text-destructive hover:text-destructive"
-            onClick={handleClearAll}
-            disabled={!notifications || notifications.length === 0}
-          >
-            <Trash2 className="mr-2 h-3 w-3" />
-            Clear All
-          </Button>
+        {isAdmin && (
+          <div className="p-2 bg-muted/30 border-t grid grid-cols-2 gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full font-bold text-[10px] uppercase tracking-widest h-8 text-destructive hover:text-destructive"
+              onClick={handleClearAll}
+              disabled={!notifications || notifications.length === 0}
+            >
+              <Trash2 className="mr-2 h-3 w-3" />
+              Clear All
+            </Button>
 
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="w-full font-bold text-[10px] uppercase tracking-widest h-8"
-            onClick={() => setOpen(false)}
-          >
-            <Link href="/dashboard/logs">View All</Link>
-          </Button>
-        </div>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="w-full font-bold text-[10px] uppercase tracking-widest h-8"
+              onClick={() => setOpen(false)}
+            >
+              <Link href="/dashboard/logs">View All</Link>
+            </Button>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );

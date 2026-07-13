@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Document, Packer, Paragraph, TextRun, ImageRun, AlignmentType, Header, Footer } from "docx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -10,18 +10,11 @@ import { Search, Eye, Loader2, FileText, Download, Users } from "lucide-react"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy } from "firebase/firestore"
 import { useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { jsPDF } from "jspdf"
 import { saveAs } from "file-saver"
 import { useToast } from "@/hooks/use-toast"
-
 
 const FOOTER_DATA = [
   { city: "California", address: "4249 Balboa Blvd, #353, Encino CA 91316 USA", phone: "+1 (888) 810-7464" },
@@ -31,25 +24,20 @@ const FOOTER_DATA = [
   { city: "Davao", address: "9th and 10th Flr, Landco Corp, Center, J.P. Laurel Ave, Bajada, 8000 Davao City, Philippines", phone: "+63 82 224 2035" },
   { city: "Siargao", address: "Tourism Rd, Brgy. Catangnan, Gen. Luna, 8419, Surigao Del Norte, Philippines", phone: "" }
 ]
-
 export default function CertificatesPage() {
   const db = useFirestore()
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCert, setSelectedCert] = useState<any>(null)
-
   const certsQuery = useMemoFirebase(() => {
     if (!db) return null
     return query(collection(db, "certificates"), orderBy("createdAt", "desc"))
   }, [db])
-
   const { data: certificates, loading } = useCollection(certsQuery)
-
   const filteredCerts = certificates?.filter(cert => 
     cert.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cert.certificateType?.toLowerCase().includes(searchTerm.toLowerCase())
   )
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved": return "bg-green-500 text-white"
@@ -58,94 +46,52 @@ export default function CertificatesPage() {
       default: return "bg-muted text-muted-foreground"
     }
   }
-
   const formatLongDate = (date: any) => {
     if (!date || typeof date.toDate !== 'function') {
       return "N/A";
     }
     return date.toDate().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
-
   const handleDownloadPDF = async (cert: any) => {
     if (!cert?.narrative) return
-  
     try {
       const doc = new jsPDF("p", "mm", "a4")
-  
       const pageWidth = doc.internal.pageSize.getWidth()
       const pageHeight = doc.internal.pageSize.getHeight()
-  
       const margin = 25
       const contentWidth = pageWidth - margin * 2
-  
-      // =========================
+
       // CONVERT IMAGE TO BASE64
-      // =========================
-  
       const getBase64Image = async (url: string) => {
         const response = await fetch(url)
         const blob = await response.blob()
-  
         return new Promise<string>((resolve) => {
           const reader = new FileReader()
-  
           reader.onloadend = () => {
             resolve(reader.result as string)
           }
-  
           reader.readAsDataURL(blob)
         })
       }
   
-      // =========================
       // LOAD IMAGES
-      // =========================
-  
       const headerBase64 = await getBase64Image("/header.jpg")
       const footerBase64 = await getBase64Image("/footer.jpg")
       const signBase64 = await getBase64Image("/sign.png")
   
-      // =========================
       // ADD HEADER
-      // =========================
+      doc.addImage( headerBase64, "JPEG", 0, 0, pageWidth, 35 )
   
-      doc.addImage(
-        headerBase64,
-        "JPEG",
-        0,
-        0,
-        pageWidth,
-        35
-      )
-  
-      // =========================
       // CONTENT
-      // =========================
-  
       const lines = cert.narrative.split("\n")
       let currentY = 50;
-
       for (const line of lines) {
         if (line.trim() === "") {
           currentY += 5
           continue;
         }
-  
-        const titles = [
-          "CERTIFICATION",
-          "CERTIFICATE OF EMPLOYMENT",
-          "CERTIFICATE OF EMPLOYMENT (COE WITH COMPENSATION)",
-          "CERTIFICATE OF TERMINATION",
-          "CERTIFICATE OF RECOGNITION",
-          "CERTIFICATE OF COMPLETION",
-          "CLEARANCE CERTIFICATE",
-          "LETTER OF RECOMMENDATION"
-        ]
-  
-        const isTitle =
-          titles.includes(line.trim().toUpperCase()) ||
-          titles.includes(line.trim())
-
+        const titles = ["CERTIFICATION", "CERTIFICATE OF EMPLOYMENT", "CERTIFICATE OF EMPLOYMENT (COE WITH COMPENSATION)", "CERTIFICATE OF TERMINATION", "CERTIFICATE OF RECOGNITION", "CERTIFICATE OF COMPLETION", "CLEARANCE CERTIFICATE", "LETTER OF RECOMMENDATION" ]
+        const isTitle = titles.includes(line.trim().toUpperCase()) || titles.includes(line.trim())
         const isIssuedLine = line.includes("Issued this");
         const isIndentedParagraph = line.startsWith('"Confidentiality.') || line.startsWith('"Non-Competition.') || line.startsWith("Employee shall not") || line.startsWith("Neither shall employee")
         const isRecognitionNameLine = cert.certificateType === "Certificate of Recognition" && line.trim() === `${cert.salutation} ${cert.employeeName}`.toUpperCase();
@@ -155,31 +101,19 @@ export default function CertificatesPage() {
         const isCompensationIntro = line.trim() === compensationIntroLine;
         const currentMargin = isIndentedParagraph ? margin + 9 : margin;
         const currentContentWidth = isIndentedParagraph ? contentWidth - 18 : contentWidth;
-  
         if (isTitle) doc.setFontSize(18);
         else if (isIndentedParagraph) doc.setFontSize(9);
         else if (cert.certificateType === "Certificate of Employment (COE with Compensation)") doc.setFontSize(12);
         else if (isRecognitionNameLine || isRecognitionPositionLine) doc.setFontSize(9);
         else doc.setFontSize(10);
-
         const splitText = doc.splitTextToSize(line, currentContentWidth)
   
         // AUTO PAGE BREAK
-        if (currentY + splitText.length * 7 > pageHeight - 45) {
+        if (currentY + splitText.length * 5 > pageHeight - 35) {
           doc.addPage()
-  
-          doc.addImage(
-            headerBase64,
-            "JPEG",
-            0,
-            0,
-            pageWidth,
-            35
-          )
-  
+          doc.addImage( headerBase64, "JPEG", 0, 0, pageWidth, 35 )
           currentY = 50
         }
-  
         if (isTitle) {
           doc.setFont("times", "bold")
           const textToRender = line.trim().toUpperCase() === "CERTIFICATION" ? "C E R T I F I C A T I O N" : line;
@@ -205,17 +139,11 @@ export default function CertificatesPage() {
 
           const { salutation, employeeName } = cert;
           const fullNameWithSalutation = `${salutation} ${employeeName}`;
-          const companyNames = [
-            "Contact DB Incorporated",
-            "Confidentiality.",
-            "Non-Competition."
-          ];
+          const companyNames = [ "Contact DB Incorporated", "Confidentiality.", "Non-Competition." ];
           const legalTerms = ['"Confidentiality."', '"Non-Competition."'];
           const highlights = [fullNameWithSalutation, ...companyNames, ...legalTerms];
-
           const renderJustifiedLineWithHighlights = (text: string, y: number) => {
             const textLines = doc.splitTextToSize(text, currentContentWidth);
-
             textLines.forEach((lineText: string, lineIndex: number) => {
               const isLastLine = lineIndex === textLines.length - 1;
               let currentX = currentMargin;
@@ -224,14 +152,11 @@ export default function CertificatesPage() {
               const spaceWidth = (words.length > 1 && !isLastLine)
                 ? (currentContentWidth - totalWordsWidth) / (words.length - 1)
                 : doc.getTextWidth(' ');
-
               const highlightRegex = new RegExp(`(${highlights.map(h => h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g');
               const parts = lineText.split(highlightRegex).filter(Boolean);
-
               parts.forEach(part => {
                 const isHighlight = highlights.includes(part);
                 doc.setFont("times", isHighlight ? "bold" : "normal");
-
                 const wordsInPart = part.split(' ');
                 wordsInPart.forEach((word, wordIndex) => {
                   doc.text(word, currentX, y);
@@ -240,42 +165,29 @@ export default function CertificatesPage() {
                     currentX += doc.getTextWidth(' ');
                   }
                 });
-
                 if (parts.length > 1) {
                    currentX += doc.getTextWidth(' ');
                 }
               });
-
               if (!isLastLine && parts.length === 1) {
                  // Fallback for standard justification on non-highlighted lines
                  doc.setFont("times", "normal");
                  doc.text(lineText, currentMargin, y, { align: 'justify', maxWidth: currentContentWidth });
               }
-
               y += 5;
             });
             return y;
           };
-
           currentY = renderJustifiedLineWithHighlights(line, currentY);
         }
-  
         if (isIssuedLine) {
           currentY += 10
         }
       }
   
-      // =========================
       // SIGNATURE
-      // =========================
-  
-      let signatureY = currentY + 20;
-      if (signatureY > pageHeight - 65) { // If signature would overlap footer
-        doc.addPage();
-        doc.addImage(headerBase64, "JPEG", 0, 0, pageWidth, 35);
-        signatureY = 50;
-      }
-  
+      const signatureY = pageHeight - 60;
+      
       // --- E-Signature (Image) ---
       const signatureWidth = 50;
       const signatureHeight = 15; // Adjust as needed for aspect ratio
@@ -287,27 +199,19 @@ export default function CertificatesPage() {
       doc.setFontSize(12);
       doc.text("Orwill Jane M. Linaza", margin, textY);
       doc.text("People Operations Officer", margin, textY + 5);
-      // =========================
+ 
       // ADD FOOTER
-      // =========================
-  
       doc.addImage(footerBase64, "JPEG", 0, pageHeight - 30, pageWidth, 23);
-  
-      // =========================
+
       // SAVE
-      // =========================
-  
       const filename = `${cert.employeeName.replace(/\s+/g, "_")}_${cert.certificateType.replace(/\s+/g, "_")}.pdf`
-  
       doc.save(filename)
-  
       toast({
         title: "PDF Exported",
         description: "Your document is ready for download.",
       })
     } catch (error) {
       console.error(error)
-  
       toast({
         title: "Export Failed",
         description: "Failed to generate PDF.",
@@ -315,10 +219,8 @@ export default function CertificatesPage() {
       })
     }
   }
-
   const handleDownloadWord = async (cert: any) => {
     if (!cert.narrative) return;
-
     const getImageBuffer = async (url: string) => {
       const response = await fetch(url);
       const blob = await response.blob();
@@ -329,17 +231,14 @@ export default function CertificatesPage() {
         reader.readAsArrayBuffer(blob);
       });
     };
-
     try {
       const headerBuffer = await getImageBuffer("/header.jpg");
       const footerBuffer = await getImageBuffer("/footer.jpg");
       const signBuffer = await getImageBuffer("/sign.png");
-
       const contentParagraphs = cert.narrative.split('\n').flatMap((line: string) => {
         if (line.trim() === "") {
           return new Paragraph({ children: [new TextRun("")] });
         }
-
         const isIndentedParagraph = line.startsWith('"Confidentiality.') || line.startsWith('"Non-Competition.') || line.startsWith("Employee shall not") || line.startsWith("Neither shall employee");
         const isRecognitionNameLine = cert.certificateType === "Certificate of Recognition" && line.trim() === `${cert.salutation} ${cert.employeeName}`.toUpperCase();
         const isRecognitionPositionLine = cert.certificateType === "Certificate of Recognition" && line.trim() === cert.position.toUpperCase();
@@ -348,7 +247,6 @@ export default function CertificatesPage() {
         const isCompensationIntro = line.trim() === compensationIntroLine;
         const titles = ["CERTIFICATION", "CERTIFICATE OF EMPLOYMENT", "CERTIFICATE OF TERMINATION", "CERTIFICATE OF RECOGNITION", "CERTIFICATE OF COMPLETION", "CLEARANCE CERTIFICATE", "LETTER OF RECOMMENDATION", "CERTIFICATE OF EMPLOYMENT (STANDARD COE)", "CERTIFICATE OF EMPLOYMENT (COE WITH COMPENSATION)"];
         const isTitle = titles.includes(line.trim().toUpperCase());
-
         if (isTitle) {
           return new Paragraph({
             children: [new TextRun({ 
@@ -360,7 +258,6 @@ export default function CertificatesPage() {
             spacing: { after: 280 },
           });
         }
-
         if (isRecognitionNameLine) {
           return new Paragraph({
             children: [new TextRun({ text: line, bold: true, size: 44 })],
@@ -368,7 +265,6 @@ export default function CertificatesPage() {
             spacing: { after: 200 },
           });
         }
-
         if (isRecognitionPositionLine) {
           return new Paragraph({
             children: [new TextRun({ text: line, size: 28 })],
@@ -376,7 +272,6 @@ export default function CertificatesPage() {
             spacing: { after: 200 },
           });
         }
-
         if (isCompensationIntro) {
           return new Paragraph({
             children: [new TextRun({ text: line, bold: true, italics: true, size: 24 })],
@@ -384,7 +279,6 @@ export default function CertificatesPage() {
             spacing: { after: 100 },
           });
         }
-
         const { salutation, employeeName } = cert;
         const fullNameWithSalutation = `${salutation} ${employeeName}`;
         const companyNames = ["Contact DB Incorporated", "Confidentiality.", "Non-Competition."];
@@ -392,7 +286,6 @@ export default function CertificatesPage() {
         const highlights = [fullNameWithSalutation, ...companyNames, ...legalTerms];
         const highlightRegex = new RegExp(`(${highlights.map(h => h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g');
         const parts = line.split(highlightRegex).filter(Boolean);
-
         return new Paragraph({
           children: parts.map(part => new TextRun({
             text: part,
@@ -410,7 +303,6 @@ export default function CertificatesPage() {
           spacing: { after: cert.certificateType === "Certificate of Termination" ? 140 : 100 },
         });
       });
-
       const signatureParagraphs = [
         new Paragraph({
           children: [new ImageRun({ data: signBuffer, transformation: { width: 190, height: 55 } })],
@@ -420,7 +312,6 @@ export default function CertificatesPage() {
         new Paragraph({ children: [new TextRun({ text: "Orwill Jane M. Linaza", bold: true, size: 24 })] }),
         new Paragraph({ children: [new TextRun({ text: "People Operations Officer", bold: true, size: 24 })] }),
       ];
-
       const doc = new Document({
         sections: [{
           properties: { page: { margin: { top: 2880, right: 1440, bottom: 0, left: 1440 } } },
@@ -429,18 +320,15 @@ export default function CertificatesPage() {
           children: [...contentParagraphs, ...signatureParagraphs],
         }],
       });
-
       const blob = await Packer.toBlob(doc);
       const filename = `${cert.employeeName.replace(/\s+/g, "_")}_${cert.certificateType.replace(/\s+/g, "_")}.docx`;
       saveAs(blob, filename);
-
       toast({ title: "Word Document Exported", description: "The .docx file has been generated successfully." });
     } catch (error) {
       console.error(error);
       toast({ title: "Export Failed", description: "Failed to generate .docx file.", variant: "destructive" });
     }
   };
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -462,14 +350,11 @@ export default function CertificatesPage() {
                 placeholder="Search employee name..." 
                 className="pl-10 h-10 bg-background"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+                onChange={(e) => setSearchTerm(e.target.value)}/>
             </div>
-         
           </div>
         </CardHeader>
          <p className="text-right font-bold opacity-60 text-xs tracking-widest mt-1">Only Approved Documents Can Be Downloaded.</p>
-  
         <CardContent className="p-0">
           <Table>
             <TableHeader className="bg-muted/50">
@@ -507,8 +392,7 @@ export default function CertificatesPage() {
                           variant="ghost" 
                           size="icon" 
                           className="hover:bg-primary/10"
-                          onClick={() => setSelectedCert(cert)}
-                        >
+                          onClick={() => setSelectedCert(cert)}>
                           <Eye className="h-4 w-4" />
                         </Button>
                         {cert.status === 'Approved' && (
@@ -527,7 +411,6 @@ export default function CertificatesPage() {
                               onClick={() => handleDownloadPDF(cert)}>
                               <Download className="h-4 w-4 mr-1" /> PDF
                             </Button>
-                            
                           </>
                         )}
                       </div>
@@ -563,25 +446,21 @@ export default function CertificatesPage() {
           </DialogHeader>
           <div className="flex-1 overflow-y-auto p-8 bg-white">
             <div className="max-w-2xl mx-auto">
-              <img src="/header.jpg" alt="Document Header" className="w-full mb-8" />
+              <img src="/header.jpg" alt="Document Header" className="w-full mb-8"/>
               <div className="space-y-4">
                 {selectedCert?.narrative?.split('\n').map((line: string, i: number) => {
-                  if (line.trim() === "") return <div key={i} className="h-2" />;
-                  
+                  if (line.trim() === "") return <div key={i} className="h-2"/>;
                   const titles = ["CERTIFICATION", "CERTIFICATE OF EMPLOYMENT", "CERTIFICATE OF EMPLOYMENT (COE WITH COMPENSATION)", "CERTIFICATE OF TERMINATION", "CERTIFICATE OF RECOGNITION", "CERTIFICATE OF COMPLETION", "CLEARANCE CERTIFICATE", "LETTER OF RECOMMENDATION", "CERTIFICATE OF EMPLOYMENT (STANDARD COE)"]
                   const isTitle = titles.includes(line.trim().toUpperCase()) || titles.includes(line.trim());
                   const isIssuedLine = line.includes("Issued this");
                   const isFirstParagraph = line.startsWith("This is to certify that");
-                  
                   return (
-                    <p 
-                      key={i} 
+                    <p key={i} 
                       className={cn(
                         "text-[12px] leading-[1.6] font-medium font-body text-foreground",
                         isTitle ? "text-center font-bold uppercase tracking-wider my-6 text-xl" : (isFirstParagraph ? "" : "text-justify"),
                         isIssuedLine ? "mt-8 font-semibold" : ""
-                      )}
-                    >
+                      )}>
                       {line}
                     </p>
                   );
@@ -599,12 +478,7 @@ export default function CertificatesPage() {
             </div>
           </div>
           <div className="p-4 border-t bg-muted/10 flex justify-end">
-            <Button 
-              onClick={() => setSelectedCert(null)}
-              className="font-bold px-8 shadow-none"
-            >
-              Close Preview
-            </Button>
+            <Button onClick={() => setSelectedCert(null)} className="font-bold px-8 shadow-none">Close Preview</Button>
           </div>
         </DialogContent>
       </Dialog>

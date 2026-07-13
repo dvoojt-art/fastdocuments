@@ -1,14 +1,7 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  DocumentReference, 
-  onSnapshot, 
-  DocumentSnapshot, 
-  DocumentData,
-  FirestoreError 
-} from 'firebase/firestore';
+import { DocumentReference, onSnapshot, DocumentSnapshot, DocumentData, FirestoreError } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -32,9 +25,9 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
       (err: FirestoreError) => {
         const permissionError = new FirestorePermissionError({
           path: docRef.path,
-          operation: 'get',
+          operation: "get",
         });
-        errorEmitter.emit('permission-error', permissionError);
+                errorEmitter.emit('permission-error', permissionError);
         setError(err);
         setLoading(false);
       }

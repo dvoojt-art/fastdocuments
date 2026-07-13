@@ -16,7 +16,6 @@ export function ApprovalCountBadge() {
   }, [db]);
 
   const { data: pendingCerts } = useCollection(pendingCountQuery);
-
   const count = pendingCerts?.length ?? 0;
 
   if (count === 0) {

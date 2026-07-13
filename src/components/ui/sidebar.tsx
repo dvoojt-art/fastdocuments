@@ -9,15 +9,9 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { Sheet, SheetContent,SheetHeader, SheetTitle, SheetDescription} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { SheetTitle } from "@/components/ui/sheet"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -197,6 +191,8 @@ const Sidebar = React.forwardRef<
   return (
     <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
       <SheetContent
+        side={side}
+        aria-describedby={undefined}
         data-sidebar="sidebar"
         data-mobile="true"
         className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
@@ -205,7 +201,6 @@ const Sidebar = React.forwardRef<
             "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
           } as React.CSSProperties
         }
-        side={side}
       >
         <VisuallyHidden>
           <SheetTitle>Navigation Menu</SheetTitle>

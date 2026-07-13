@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -13,8 +12,6 @@ import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { useFirestore } from "@/firebase"
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"
-import { errorEmitter } from "@/firebase/error-emitter"
-import { FirestorePermissionError } from "@/firebase/errors"
 import { createNotification } from "@/lib/notifications"
 
 export default function NewEmployeePage() {
@@ -22,7 +19,6 @@ export default function NewEmployeePage() {
   const db = useFirestore()
   const router = useRouter()
   const { toast } = useToast()
-  
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -44,9 +40,7 @@ export default function NewEmployeePage() {
       })
       return
     }
-
     setLoading(true)
-    
     if (db) {
       addDoc(collection(db, "employees"), {
         ...formData,
@@ -65,25 +59,16 @@ export default function NewEmployeePage() {
           type: "Success",
           link: "/dashboard/employees"
         });
-
-
         router.push("/dashboard/employees")
       })
-      .catch(async (err) => {
-        const permissionError = new FirestorePermissionError(
-          "Permission denied while creating employee",
-          {
-            path: "employees",
-            operation: "create",
-            requestResourceData: formData,
-          }
-)
-        errorEmitter.emit("permission-error", permissionError)
+      .catch((err) => {
+        console.error("Firestore Error:", err);
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        setLoading(false);
+      });
     }
-  }
-
+    }
   return (
     <div className="max-w-2xl mx-auto space-y-8 pb-20">
       <div className="flex items-center gap-4">
@@ -129,7 +114,6 @@ export default function NewEmployeePage() {
                   required
                 />
               </div>
-              
             </div>
 
             <div className="space-y-2">
@@ -159,7 +143,7 @@ export default function NewEmployeePage() {
                     <SelectItem value="SDR">Sales Development Representative</SelectItem>
                     <SelectItem value="CSM">Client Success Manager</SelectItem>
                     <SelectItem value="IT">IT Tech Support</SelectItem>
-                    <SelectItem value="OJT">On-The-Job-Training</SelectItem>
+                    <SelectItem value="On-the-Job-Training (OJT)">On-The-Job-Training</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

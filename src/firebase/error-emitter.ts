@@ -1,8 +1,6 @@
-
 'use client';
 
 type ErrorHandler = (error: any) => void;
-
 class ErrorEmitter {
   private listeners: { [channel: string]: ErrorHandler[] } = {};
 

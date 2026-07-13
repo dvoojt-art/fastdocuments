@@ -1,4 +1,3 @@
-
 export const firebaseConfig = {
   apiKey: "AIzaSyB0y5nyRc0WUz2pAbacB2ZugmprYSXfLaw",
   authDomain: "studio-7833616261-22160.firebaseapp.com",

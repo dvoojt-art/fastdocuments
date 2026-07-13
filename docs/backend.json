@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "Employee": {
@@ -31,6 +30,9 @@
         "purposeOfCertificate": { "type": "string" },
         "narrative": { "type": "string" },
         "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "headerImageUrl": { "type": "string" },
+        "footerImageUrl": { "type": "string" },
+        "signatureImageUrl": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       }
     },
@@ -43,6 +45,9 @@
         "address": { "type": "string" },
         "hrLead": { "type": "string" },
         "supportEmail": { "type": "string" },
+        "headerImageUrl": { "type": "string" },
+        "footerImageUrl": { "type": "string" },
+        "signatureImageUrl": { "type": "string" },
         "autoSaveDrafts": { "type": "boolean" },
         "emailNotifications": { "type": "boolean" },
         "auditTrail": { "type": "boolean" }

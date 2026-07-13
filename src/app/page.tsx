@@ -4,7 +4,7 @@ import {
   Zap, 
   ArrowRight, 
   ShieldCheck,
-  LayoutGrid
+  LayoutGrid, Shield, Users
 } from "lucide-react"
 import { ChevronUp } from "lucide-react"
 
@@ -39,8 +39,9 @@ export default function HomePage() {
             <Link href="#features">Learn More</Link>
           </Button>
         </nav>
-      </header>
+        </header>
 
+      {/* Main Content */}
       <main className="flex-1 relative z-10">
         {/* Hero Section */}
         <section className="w-full py-20 md:py-32 px-6 text-center">
@@ -57,19 +58,25 @@ export default function HomePage() {
               The centralized hub to request and access official HR documents and certificates instantly without manual typing!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4 mb-40">
-              <Button asChild size="lg" className="h-16 px-12 rounded-full text-lg font-bold group shadow-none bg-primary text-primary-foreground hover:bg-primary/90 border-none">
+              <Button asChild size="lg" className="h-16 px-12 rounded-full text-lg font-bold group shadow-none border-2  text-[#0f326e] hover:bg-[#0f326e] hover:text-white transition-all">
                 <Link href="/login">
-                  Open FastDocs Portal
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  <Shield className="ml-2 h-5 w-5"/>
+                  Admin Console
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="h-16 px-12 rounded-full text-lg font-bold group shadow-none border-2 border-[#0f326e] text-[#0f326e] hover:bg-[#0f326e] hover:text-white transition-all">
+                <Link href="/login">
+                  Member Hub
+                  <Users className="ml-2 h-5 w-5"/>
                 </Link>
               </Button>
             </div>
 
             {/* Features Section */}
-            <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-12 mt-40 max-w-6xl mx-auto pb-20">
+            <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-12 mt-80 max-w-6xl mx-auto pb-20">
               <div className="flex flex-col items-center space-y-4">
                 <div className="bg-primary h-12 w-12 rounded-full flex items-center justify-center text-primary-foreground">
-                  <Zap className="h-6 w-6 fill-current" />
+                  <Zap className="h-6 w-6 fill-current"/>
                 </div>
                 <h3 className="text-xl font-bold font-headline uppercase">Fast Turnaround</h3>
                 <p className="text-sm font-medium opacity-60 leading-relaxed">
@@ -78,7 +85,7 @@ export default function HomePage() {
               </div>
               <div className="flex flex-col items-center space-y-4">
                 <div className="bg-primary h-12 w-12 rounded-full flex items-center justify-center text-primary-foreground">
-                  <ShieldCheck className="h-6 w-6" />
+                  <ShieldCheck className="h-6 w-6"/>
                 </div>
                 <h3 className="text-xl font-bold font-headline uppercase">Secure Access</h3>
                 <p className="text-sm font-medium opacity-60 leading-relaxed">
@@ -87,7 +94,7 @@ export default function HomePage() {
               </div>
               <div className="flex flex-col items-center space-y-4">
                 <div className="bg-primary h-12 w-12 rounded-full flex items-center justify-center text-primary-foreground">
-                  <LayoutGrid className="h-6 w-6" />
+                  <LayoutGrid className="h-6 w-6"/>
                 </div>
                 <h3 className="text-xl font-bold font-headline uppercase">Unified Hub</h3>
                 <p className="text-sm font-medium opacity-60 leading-relaxed">
@@ -107,11 +114,9 @@ export default function HomePage() {
             </div>
             <span className="font-headline font-bold text-lg text-white">FastDocs</span>
           </div>
-          
           <p className="text-sm font-medium opacity-80 italic text-center">
             Empowering the Davao workforce through digital transformation.
           </p>
-          
           <nav className="flex gap-8">
             <Link className="text-sm font-bold hover:underline underline-offset-4 text-white/80 hover:text-white" href="/terms">Terms</Link>
             <Link className="text-sm font-bold hover:underline underline-offset-4 text-white/80 hover:text-white" href="/privacy">Privacy</Link>

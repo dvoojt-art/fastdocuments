@@ -3,7 +3,6 @@ import { useRef } from "react";
 
 export default function AddressInput() {
   const autoRef = useRef<google.maps.places.Autocomplete | null>(null);
-
   const onPlaceChanged = () => {
     const place = autoRef.current?.getPlace();
     console.log(place?.formatted_address);

@@ -16,11 +16,8 @@ export default function EditEmployeePage() {
   const db = useFirestore()
   const router = useRouter()
   const searchParams = useSearchParams()
-
   const id = searchParams.get("id")
-
   const [loading, setLoading] = useState(true)
-
   const [employee, setEmployee] = useState({
     firstName: "",
     lastName: "",
@@ -89,7 +86,6 @@ export default function EditEmployeePage() {
 
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            
             <div className="space-y-2">
               <Label htmlFor="lastName" className="font-bold">Last Name*</Label>
               <Input
@@ -99,7 +95,6 @@ export default function EditEmployeePage() {
                 onChange={(e) => setEmployee({ ...employee, lastName: e.target.value })}
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="firstName" className="font-bold">First Name*</Label>
               <Input
@@ -141,7 +136,7 @@ export default function EditEmployeePage() {
                     <SelectItem value="SDR">Sales Development Representative</SelectItem>
                     <SelectItem value="CSM">Client Success Manager</SelectItem>
                     <SelectItem value="IT">IT Tech Support</SelectItem>
-                    <SelectItem value="OJT">On-The-Job-Training</SelectItem>
+                    <SelectItem value="On-the-Job-Training (OJT)">On-The-Job-Training</SelectItem>
                   </SelectContent>
                 </Select>       
               </div>
